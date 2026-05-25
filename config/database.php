@@ -1,10 +1,11 @@
 <?php
+define('BASE_URL', '/'); 
 function getDB() {
-    $host = isset($_ENV['DB_HOST']) ? $_ENV['DB_HOST'] : 'localhost';
-    $db   = isset($_ENV['DB_NAME']) ? $_ENV['DB_NAME'] : 'your_local_db_name';
-    $user = isset($_ENV['DB_USER']) ? $_ENV['DB_USER'] : 'root';
-    $pass = isset($_ENV['DB_PASSWORD']) ? $_ENV['DB_PASSWORD'] : '';
-    $port = isset($_ENV['DB_PORT']) ? $_ENV['DB_PORT'] : '3306'; 
+    $host = getenv('DB_HOST') ?: 'localhost';
+    $db   = getenv('DB_NAME') ?: 'ccs_sit_in_db';
+    $user = getenv('DB_USER') ?: 'root';
+    $pass = getenv('DB_PASSWORD') ?: ''; 
+    $port = getenv('DB_PORT') ?: '3306'; 
     $charset = 'utf8mb4';
 
     $dsn = "mysql:host=$host;port=$port;dbname=$db;charset=$charset";
@@ -15,7 +16,7 @@ function getDB() {
         PDO::ATTR_EMULATE_PREPARES   => false,
     ];
 
-    if (isset($_ENV['DB_HOST'])) {
+    if (getenv('DB_HOST')) {
         $options[PDO::MYSQL_ATTR_SSL_CA] = '/etc/pki/tls/certs/ca-bundle.crt';
     }
 
