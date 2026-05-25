@@ -8,22 +8,24 @@ define('DB_USER', 'root');
 define('DB_PASS', '');
 define('BASE_URL', '/ccs-sit-in-monitoring');
 
-function getDB(): PDO
-{
-    static $pdo = null;
-    if ($pdo === null) {
-        // 1. Set PHP's internal script timezone execution context
-        date_default_timezone_set('Asia/Manila');
+<?php
+function getDB() {
+    $host = isset($_ENV['DB_HOST']) ? $_ENV['DB_HOST'] : 'localhost';
+    $db   = isset($_ENV['DB_NAME']) ? $_ENV['DB_NAME'] : 'your_local_db_name';
+    $user = isset($_ENV['DB_USER']) ? $_ENV['DB_USER'] : 'root';
+    $pass = isset($_ENV['DB_PASSWORD']) ? $_ENV['DB_PASSWORD'] : ''; // Local password
+    $charset = 'utf8mb4';
 
-        $dsn = 'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4';
-        $pdo = new PDO($dsn, DB_USER, DB_PASS, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false,
-        ]);
+    $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+    $options = [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES   => false,
+    ];
 
-        // 2. Force the MySQL session connection to match the same timezone (+08:00)
-        $pdo->exec("SET time_zone = '+08:00';");
+    try {
+         return new PDO($dsn, $user, $pass, $options);
+    } catch (\PDOException $e) {
+         throw new \PDOException($e->getMessage(), (int)$e->getCode());
     }
-    return $pdo;
 }
