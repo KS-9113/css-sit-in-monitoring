@@ -1,14 +1,4 @@
 <?php
-/**
- * Database configuration for XAMPP
- */
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'ccs_sit_in_db');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('BASE_URL', '/ccs-sit-in-monitoring');
-
-<?php
 function getDB() {
     $host = isset($_ENV['DB_HOST']) ? $_ENV['DB_HOST'] : 'localhost';
     $db   = isset($_ENV['DB_NAME']) ? $_ENV['DB_NAME'] : 'your_local_db_name';
