@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/includes/functions.php';
+require_once(__DIR__ . '/../includes/functions.php');
 $pageTitle = 'CCS Sit-In Monitoring';
 $db = getDB();
 
