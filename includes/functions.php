@@ -151,6 +151,75 @@ function statusBadgeClass(string $status): string
     };
 }
 
+function tableHasColumn(string $table, string $column): bool
+{
+    static $cache = [];
+    $key = $table . '.' . $column;
+    if (isset($cache[$key])) {
+        return $cache[$key];
+    }
+    try {
+        $stmt = getDB()->prepare("SHOW COLUMNS FROM `$table` LIKE ?");
+        $stmt->execute([$column]);
+        return $cache[$key] = (bool) $stmt->fetch();
+    } catch (PDOException) {
+        return $cache[$key] = false;
+    }
+}
+
+function ensureNotificationsTable(): bool
+{
+    try {
+        $db = getDB();
+        $db->exec("CREATE TABLE IF NOT EXISTS notifications (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            recipient_type ENUM('student','admin') NOT NULL,
+            student_id INT DEFAULT NULL,
+            admin_id INT DEFAULT NULL,
+            reservation_id INT DEFAULT NULL,
+            title VARCHAR(150) NOT NULL,
+            message TEXT NOT NULL,
+            action_required TINYINT(1) NOT NULL DEFAULT 0,
+            is_deleted TINYINT(1) NOT NULL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+            FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE SET NULL,
+            FOREIGN KEY (reservation_id) REFERENCES sit_in_records(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+        return true;
+    } catch (PDOException) {
+        return false;
+    }
+}
+
+function createNotification(string $recipientType, ?int $studentId, ?int $adminId, ?int $reservationId, string $title, string $message, bool $actionRequired = false): bool
+{
+    if (!tableHasColumn('notifications', 'id') && !ensureNotificationsTable()) {
+        return false;
+    }
+    try {
+        $stmt = getDB()->prepare('INSERT INTO notifications (recipient_type, student_id, admin_id, reservation_id, title, message, action_required) VALUES (?,?,?,?,?,?,?)');
+        return $stmt->execute([$recipientType, $studentId, $adminId, $reservationId, $title, $message, $actionRequired ? 1 : 0]);
+    } catch (PDOException) {
+        return false;
+    }
+}
+
+function archiveNotification(int $id, string $recipientType, ?int $userId = null): bool
+{
+    if (!tableHasColumn('notifications', 'id')) {
+        return false;
+    }
+    $sql = 'UPDATE notifications SET is_deleted = 1 WHERE id = ? AND recipient_type = ?';
+    $params = [$id, $recipientType];
+    if ($userId !== null && $recipientType === 'student') {
+        $sql .= ' AND student_id = ?';
+        $params[] = $userId;
+    }
+    return (bool) getDB()->prepare($sql)->execute($params);
+}
+
 function jsonResponse(array $data, int $code = 200): void
 {
     http_response_code($code);

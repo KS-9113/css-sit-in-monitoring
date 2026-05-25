@@ -33,5 +33,15 @@ if (isPcOccupied($labId, $pc) || isPcBooked($labId, $pc, $date)) {
 $db = getDB();
 $stmt = $db->prepare('INSERT INTO sit_in_records (sit_in_no, student_id, purpose, laboratory_id, pc_number, scheduled_date, scheduled_time_in, status) VALUES (?,?,?,?,?,?,?,?)');
 $stmt->execute([generateSitInNo(), $studentId, $purpose, $labId, $pc, $date, $timeIn, 'Reserved']);
+$reservationId = (int) $db->lastInsertId();
+createNotification(
+    'admin',
+    null,
+    null,
+    $reservationId,
+    'New Sit-In Reservation',
+    'A new reservation request was submitted for lab booking. Review and approve or reject it from the Admin Notifications page.',
+    true
+);
 
 redirect('/student/history.php?toast=' . urlencode('Reservation submitted. Awaiting approval.'));

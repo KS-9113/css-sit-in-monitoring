@@ -22,8 +22,7 @@ $d = 'div';
 <<?= $d ?> class="col-md-4"><label class="form-label-custom">Middle Name</label><input name="middle_name" class="form-control" value="<?= htmlspecialchars($s['middle_name'] ?? '') ?>"></<?= $d ?>>
 <<?= $d ?> class="col-md-4"><label class="form-label-custom">Last Name</label><input name="last_name" class="form-control" value="<?= htmlspecialchars($s['last_name']) ?>" required></<?= $d ?>>
 <<?= $d ?> class="col-md-4"><label class="form-label-custom">Course</label><input name="course" class="form-control" value="<?= htmlspecialchars($s['course']) ?>"></<?= $d ?>>
-<<?= $d ?> class="col-md-4"><label class="form-label-custom">Year Level</label><input name="year_level" class="form-control" value="<?= htmlspecialchars($s['year_level']) ?>"></<?= $d ?>>
-<<?= $d ?> class="col-md-4"><label class="form-label-custom">Remaining Sessions</label><input name="remaining_sessions" type="number" class="form-control" value="<?= (int)$s['remaining_sessions'] ?>"></<?= $d ?>>
+<<?= $d ?> class="col-md-4"><label class="form-label-custom">Year Level</label><input name="year_level" class="form-control" value="<?= htmlspecialchars($s['year_level']) ?>"></<?= $d ?>><<?= $d ?> class="col-md-4"><label class="form-label-custom">Section</label><input name="section" class="form-control" value="<?= htmlspecialchars($s['section'] ?? '') ?>"></<?= $d ?><<?= $d ?> class="col-md-4"><label class="form-label-custom">Remaining Sessions</label><input name="remaining_sessions" type="number" class="form-control" value="<?= (int)$s['remaining_sessions'] ?>"></<?= $d ?>>
 <<?= $d ?> class="col-12"><label class="form-label-custom">Address</label><input name="address" class="form-control" value="<?= htmlspecialchars($s['address']) ?>"></<?= $d ?>>
 <<?= $d ?> class="col-md-6"><label class="form-label-custom">New Password (optional)</label><input name="password" type="password" class="form-control"></<?= $d ?>>
 </<?= $d ?>>

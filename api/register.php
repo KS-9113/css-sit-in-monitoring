@@ -12,6 +12,7 @@ $middleName = trim($_POST['middle_name'] ?? '');
 $lastName = trim($_POST['last_name'] ?? '');
 $course = $_POST['course'] ?? '';
 $yearLevel = $_POST['year_level'] ?? '';
+$section = trim($_POST['section'] ?? '');
 $address = trim($_POST['address'] ?? '');
 $password = $_POST['password'] ?? '';
 $confirm = $_POST['confirm_password'] ?? '';
@@ -32,7 +33,12 @@ if ($check->fetch()) {
 }
 
 $hash = password_hash($password, PASSWORD_DEFAULT);
-$stmt = $db->prepare('INSERT INTO students (id_number, email, first_name, middle_name, last_name, course, year_level, address, password, remaining_sessions) VALUES (?,?,?,?,?,?,?,?,?,30)');
-$stmt->execute([$idNumber, $email, $firstName, $middleName ?: null, $lastName, $course, $yearLevel, $address, $hash]);
+if (tableHasColumn('students', 'section')) {
+    $stmt = $db->prepare('INSERT INTO students (id_number, email, first_name, middle_name, last_name, course, year_level, section, address, password, remaining_sessions) VALUES (?,?,?,?,?,?,?,?,?,?,30)');
+    $stmt->execute([$idNumber, $email, $firstName, $middleName ?: null, $lastName, $course, $yearLevel, $section, $address, $hash]);
+} else {
+    $stmt = $db->prepare('INSERT INTO students (id_number, email, first_name, middle_name, last_name, course, year_level, address, password, remaining_sessions) VALUES (?,?,?,?,?,?,?,?,?,30)');
+    $stmt->execute([$idNumber, $email, $firstName, $middleName ?: null, $lastName, $course, $yearLevel, $address, $hash]);
+}
 
 redirect('/login.php?toast=' . urlencode('Account Registered Successfully'));

@@ -31,7 +31,16 @@ $d = 'div';
 <<?= $d ?> class="col-md-6"><label class="form-label-custom">Purpose of Sit-In</label>
 <select name="purpose" class="form-select" required>
 <option value="">Select purpose</option>
-<?php foreach (['C programming','Java programming','Python programming','Web Development','Database Management'] as $p): ?>
+<?php foreach ([
+    'C# Programming',
+    'TypeScript Programming',
+    'Python Programming',
+    'PHP Programming',
+    'JavaScript Programming',
+    'Java Programming',
+    'C++ Programming',
+    'Others'
+] as $p): ?>
 <option><?= $p ?></option>
 <?php endforeach; ?>
 </select></<?= $d ?>>

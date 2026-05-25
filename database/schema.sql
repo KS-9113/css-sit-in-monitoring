@@ -23,13 +23,14 @@ CREATE TABLE students (
     last_name VARCHAR(80) NOT NULL,
     course VARCHAR(50) NOT NULL,
     year_level VARCHAR(20) NOT NULL,
+    section VARCHAR(50) DEFAULT NULL,
     address TEXT NOT NULL,
     password VARCHAR(255) NOT NULL,
     profile_picture VARCHAR(255) DEFAULT 'default-avatar.png',
     remaining_sessions INT NOT NULL DEFAULT 30,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_students_search (id_number, first_name, last_name, course, year_level)
+    INDEX idx_students_search (id_number, first_name, last_name, course, year_level, section)
 );
 
 -- Laboratories
@@ -107,10 +108,30 @@ INSERT INTO admins (username, password, full_name) VALUES
 
 -- Default laboratories
 INSERT INTO laboratories (lab_name, pc_count) VALUES
-('Computer Lab 1', 50),
-('Computer Lab 2', 50),
-('Computer Lab 3', 50),
-('Programming Lab', 50);
+('Laboratory 524', 50),
+('Laboratory 526', 50),
+('Laboratory 528', 50),
+('Laboratory 530', 50),
+('Laboratory 542', 50),
+('Laboratory 544', 50);
+
+-- Notifications
+CREATE TABLE notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    recipient_type ENUM('student','admin') NOT NULL,
+    student_id INT DEFAULT NULL,
+    admin_id INT DEFAULT NULL,
+    reservation_id INT DEFAULT NULL,
+    title VARCHAR(150) NOT NULL,
+    message TEXT NOT NULL,
+    action_required TINYINT(1) NOT NULL DEFAULT 0,
+    is_deleted TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE SET NULL,
+    FOREIGN KEY (reservation_id) REFERENCES sit_in_records(id) ON DELETE CASCADE
+);
 
 -- Sample announcement
 INSERT INTO announcements (title, content, start_date, end_date) VALUES

@@ -19,15 +19,32 @@ $leaderboard = $db->prepare($leaderboardSql);
 $leaderboard->execute($params);
 $leaderboard = $leaderboard->fetchAll();
 
-$monthlySql = "SELECT DATE_FORMAT(time_in, '%Y-%m') AS ym, COUNT(*) AS cnt
-    FROM sit_in_records WHERE status = 'Completed' AND time_in IS NOT NULL";
-$filterParams = [];
-if ($from !== '') { $monthlySql .= ' AND DATE(time_in) >= ?'; $filterParams[] = $from; }
-if ($to !== '') { $monthlySql .= ' AND DATE(time_in) <= ?'; $filterParams[] = $to; }
-$monthlySql .= ' GROUP BY ym ORDER BY ym';
-$monthly = $db->prepare($monthlySql);
-$monthly->execute($filterParams);
-$monthly = $monthly->fetchAll();
+$labRoomSql = "SELECT l.lab_name, COUNT(r.id) AS cnt FROM laboratories l LEFT JOIN sit_in_records r ON r.laboratory_id = l.id AND r.status IN ('On Going','Completed')";
+$labParams = [];
+if ($from !== '') { $labRoomSql .= ' AND DATE(r.scheduled_date) >= ?'; $labParams[] = $from; }
+if ($to !== '') { $labRoomSql .= ' AND DATE(r.scheduled_date) <= ?'; $labParams[] = $to; }
+$labRoomSql .= ' GROUP BY l.id ORDER BY cnt DESC';
+$labRoomStmt = $db->prepare($labRoomSql);
+$labRoomStmt->execute($labParams);
+$labRoomCounts = $labRoomStmt->fetchAll();
+
+$purposeSql = "SELECT purpose, COUNT(*) AS cnt FROM sit_in_records WHERE status IN ('On Going','Completed')";
+$purposeParams = [];
+if ($from !== '') { $purposeSql .= ' AND DATE(scheduled_date) >= ?'; $purposeParams[] = $from; }
+if ($to !== '') { $purposeSql .= ' AND DATE(scheduled_date) <= ?'; $purposeParams[] = $to; }
+$purposeSql .= ' GROUP BY purpose ORDER BY cnt DESC';
+$purposeStmt = $db->prepare($purposeSql);
+$purposeStmt->execute($purposeParams);
+$purposeCounts = $purposeStmt->fetchAll();
+
+$dailySql = "SELECT DATE(scheduled_date) AS day, COUNT(*) AS cnt FROM sit_in_records WHERE status IN ('On Going','Completed')";
+$dailyParams = [];
+if ($from !== '') { $dailySql .= ' AND DATE(scheduled_date) >= ?'; $dailyParams[] = $from; }
+if ($to !== '') { $dailySql .= ' AND DATE(scheduled_date) <= ?'; $dailyParams[] = $to; }
+$dailySql .= ' GROUP BY day ORDER BY day';
+$dailyStmt = $db->prepare($dailySql);
+$dailyStmt->execute($dailyParams);
+$dailyCounts = $dailyStmt->fetchAll();
 
 $todayMinutes = (int) $db->query("SELECT COALESCE(SUM(duration_minutes),0) FROM sit_in_records WHERE status='Completed' AND DATE(time_out)=CURDATE()")->fetchColumn();
 $pending = (int) $db->query("SELECT COUNT(*) FROM sit_in_records WHERE status='Reserved'")->fetchColumn();
@@ -38,8 +55,12 @@ $pageTitle = 'Sit-In Reports';
 require __DIR__ . '/../includes/head.php';
 require __DIR__ . '/../includes/admin_navbar.php';
 $d = 'div';
-$labels = json_encode(array_column($monthly, 'ym'));
-$counts = json_encode(array_column($monthly, 'cnt'));
+$labLabels = json_encode(array_column($labRoomCounts, 'lab_name'));
+$labData = json_encode(array_column($labRoomCounts, 'cnt'));
+$purposeLabels = json_encode(array_column($purposeCounts, 'purpose'));
+$purposeData = json_encode(array_column($purposeCounts, 'cnt'));
+$dailyLabels = json_encode(array_column($dailyCounts, 'day'));
+$dailyData = json_encode(array_column($dailyCounts, 'cnt'));
 ?>
 <div class="container-fluid py-4 px-4">
     <h4 class="fw-bold mb-4">Sit-In Reports</h4>
@@ -87,20 +108,41 @@ $counts = json_encode(array_column($monthly, 'cnt'));
     </form>
 
     <div class="row g-4 mb-4">
-        <div class="col-12 col-lg-8">
+        <div class="col-12 col-lg-6">
             <div class="card main-card p-4 border-0 shadow-sm h-100">
-                <h5 class="fw-bold mb-3">Sit-In Volume</h5>
+                <h5 class="fw-bold mb-3">Sit-In by Lab Room</h5>
                 <div style="position: relative; width: 100%; height: 100%;">
-                    <canvas id="monthChart" height="120"></canvas>
+                    <canvas id="labRoomChart" height="220"></canvas>
                 </div>
             </div>
         </div>
-        
-        <div class="col-12 col-lg-4">
+        <div class="col-12 col-lg-6">
             <div class="card main-card p-4 border-0 shadow-sm h-100">
-                <h5 class="fw-bold mb-4">Student Leaderboard</h5>
+                <h5 class="fw-bold mb-3">Purpose Distribution</h5>
+                <div style="position: relative; width: 100%; height: 100%;">
+                    <canvas id="purposeChart" height="220"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="card main-card p-4 border-0 shadow-sm h-100">
+                <h5 class="fw-bold mb-3">Daily Sit-In Trends</h5>
+                <div style="position: relative; width: 100%; height: 100%;">
+                    <canvas id="dailyTrendChart" height="140"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-xl-4">
+            <div class="card main-card p-4 border-0 shadow-sm h-100">
+                <h5 class="fw-bold mb-4">Top 3 Leaderboard</h5>
                 <div class="d-flex flex-column gap-3">
-                    <?php foreach (array_slice($leaderboard, 0, 3) as $i => $row): $rank = $i+1; ?>
+                    <?php foreach (array_slice($leaderboard, 0, 3) as $i => $row): $rank = $i + 1; ?>
                         <div class="d-flex align-items-center gap-3">
                             <span class="leaderboard-rank rank-<?= $rank ?>"><?= $rank ?></span>
                             <div>
@@ -112,48 +154,98 @@ $counts = json_encode(array_column($monthly, 'cnt'));
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="table-responsive bg-white shadow-sm rounded">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th width="60">Rank</th>
-                    <th>ID Number</th>
-                    <th>Name</th>
-                    <th>Course</th>
-                    <th>Year Level</th>
-                    <th>Sessions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($leaderboard as $i => $row): ?>
-                    <tr>
-                        <td>
-                            <?php if ($i < 3): ?>
-                                <span class="leaderboard-rank rank-<?= $i+1 ?>"><?= $i+1 ?></span>
-                            <?php else: ?>
-                                <span class="ps-2"><?= $i+1 ?></span>
-                            <?php endif; ?>
-                        </td>
-                        <td><?= htmlspecialchars($row['id_number']) ?></td>
-                        <td><?= htmlspecialchars(getStudentFullName($row)) ?></td>
-                        <td><?= htmlspecialchars($row['course']) ?></td>
-                        <td><?= htmlspecialchars($row['year_level']) ?></td>
-                        <td><span class="badge bg-light text-dark fw-semibold"><?= (int)$row['total_sessions'] ?></span></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+        <div class="col-12 col-xl-8">
+            <div class="table-responsive bg-white shadow-sm rounded">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="60">Rank</th>
+                            <th>ID Number</th>
+                            <th>Name</th>
+                            <th>Course</th>
+                            <th>Year Level</th>
+                            <th>Sessions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($leaderboard as $i => $row): ?>
+                            <tr>
+                                <td>
+                                    <?php if ($i < 3): ?>
+                                        <span class="leaderboard-rank rank-<?= $i + 1 ?>"><?= $i + 1 ?></span>
+                                    <?php else: ?>
+                                        <span class="ps-2"><?= $i + 1 ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?= htmlspecialchars($row['id_number']) ?></td>
+                                <td><?= htmlspecialchars(getStudentFullName($row)) ?></td>
+                                <td><?= htmlspecialchars($row['course']) ?></td>
+                                <td><?= htmlspecialchars($row['year_level']) ?></td>
+                                <td><span class="badge bg-light text-dark fw-semibold"><?= (int)$row['total_sessions'] ?></span></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 </<?= $d ?>>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
-new Chart(document.getElementById('monthChart'), {
+const labRoomChart = new Chart(document.getElementById('labRoomChart'), {
     type: 'bar',
-    data: { labels: <?= $labels ?: '[]' ?>, datasets: [{ label: 'Completed Sessions', data: <?= $counts ?: '[]' ?>, backgroundColor: '#6f42c1' }] },
-    options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    data: {
+        labels: <?= $labLabels ?: '[]' ?>,
+        datasets: [{
+            label: 'Sit-Ins',
+            data: <?= $labData ?: '[]' ?>,
+            backgroundColor: '#6f42c1'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true, precision: 0 } }
+    }
+});
+
+const purposeChart = new Chart(document.getElementById('purposeChart'), {
+    type: 'bar',
+    data: {
+        labels: <?= $purposeLabels ?: '[]' ?>,
+        datasets: [{
+            label: 'Purpose Count',
+            data: <?= $purposeData ?: '[]' ?>,
+            backgroundColor: '#198754'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        scales: { x: { beginAtZero: true, precision: 0 } }
+    }
+});
+
+const dailyTrendChart = new Chart(document.getElementById('dailyTrendChart'), {
+    type: 'line',
+    data: {
+        labels: <?= $dailyLabels ?: '[]' ?>,
+        datasets: [{
+            label: 'Daily Sit-Ins',
+            data: <?= $dailyData ?: '[]' ?>,
+            borderColor: '#0d6efd',
+            backgroundColor: 'rgba(13,110,253,0.2)',
+            fill: true,
+            tension: 0.3
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true, precision: 0 } }
+    }
 });
 </script>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

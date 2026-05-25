@@ -50,7 +50,16 @@ if ($reservations) {
     echo '<form method="post" action="' . BASE_URL . '/api/admin/create_reservation.php" class="row g-2">';
     echo '<input type="hidden" name="student_id" value="' . (int)$student['id'] . '">';
     echo "{$open} class='col-md-6'><select name='purpose' class='form-select form-select-sm' required><option value=''>Purpose</option>";
-    foreach (['C programming','Java programming','Python programming','Web Development','Database Management'] as $p) {
+    foreach ([
+        'C# Programming',
+        'TypeScript Programming',
+        'Python Programming',
+        'PHP Programming',
+        'JavaScript Programming',
+        'Java Programming',
+        'C++ Programming',
+        'Others'
+    ] as $p) {
         echo '<option>' . htmlspecialchars($p) . '</option>';
     }
     echo "</select>{$close}{$open} class='col-md-6'><select name='laboratory_id' class='form-select form-select-sm' required>";

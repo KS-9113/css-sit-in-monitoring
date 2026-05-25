@@ -21,11 +21,11 @@ body {
     min-height: 100vh;
 }
 
-/* Page Loader */
+/* Page Loader - ON TOP OF EVERYTHING */
 .page-loader {
     position: fixed;
     inset: 0;
-    z-index: 9999;
+    z-index: 99999;
     background: linear-gradient(135deg, #6f42c1 0%, #4a2c8a 100%);
     display: flex;
     align-items: center;
@@ -78,6 +78,19 @@ body {
 .navbar-purple {
     background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
     box-shadow: 0 4px 20px rgba(111, 66, 193, 0.35);
+    position: relative;
+    z-index: 1000; /* Position navbar below dropdowns */
+    overflow: visible !important;
+}
+
+.navbar-collapse {
+    overflow: visible !important;
+}
+
+.navbar .nav-item,
+.navbar .dropdown {
+    position: relative;
+    overflow: visible !important;
 }
 
 .btn-nav {
@@ -214,6 +227,12 @@ body {
     margin-left: 0.5rem;
 }
 
+/* Dropdown menus - ABOVE modals, modal backdrops, and sticky navbars */
+.navbar .dropdown-menu,
+.dropdown-menu {
+    z-index: 1100 !important;
+}
+
 .announcement-item {
     border-left: 4px solid var(--primary);
     background: #faf8ff;
@@ -297,12 +316,12 @@ body {
 .rank-2 { background: #c0c0c0; color: #333; }
 .rank-3 { background: #cd7f32; color: #fff; }
 
-/* Toast popup */
+/* Toast popup - ON TOP OF EVERYTHING */
 .toast-popup {
     position: fixed;
     top: 90px;
     right: 20px;
-    z-index: 10000;
+    z-index: 99998;
     min-width: 280px;
     animation: slideIn 0.35s ease;
 }
@@ -343,7 +362,7 @@ body {
     font-size: 0.85rem;
 }
 
-/* Modal fixes */
+/* Modal fixes - BETWEEN navbar and dropdowns */
 html.modal-open,
 body.modal-open {
     overflow: hidden !important;
@@ -357,7 +376,7 @@ body.modal-open {
     bottom: 0;
     left: 0;
     background-color: rgba(45, 27, 78, 0.4);
-    z-index: 1040;
+    z-index: 1030 !important;
 }
 
 .modal-backdrop.show {
@@ -365,7 +384,7 @@ body.modal-open {
 }
 
 .modal {
-    z-index: 1080 !important;
+    z-index: 1035 !important;
 }
 
 .modal-dialog-centered {
@@ -377,28 +396,63 @@ body.modal-open {
     box-shadow: 0 30px 80px rgba(45, 27, 78, 0.18);
 }
 
-body.modal-open .container-fluid,
-body.modal-open .main-card,
-body.modal-open .navbar,
-body.modal-open .footer-mini,
-body.modal-open .page-loader,
-body.modal-open .modal-backdrop {
-    filter: blur(6px);
-    transition: filter 0.25s ease;
-}
-
-body.modal-open .modal,
-body.modal-open .modal-backdrop {
+body.modal-open .modal {
     filter: none;
 }
 
-/* Ensure dropdown menus appear above modals */
-.dropdown-menu {
-    z-index: 1090;
-}
+/* Z-INDEX HIERARCHY REFERENCE:
+ * 99999  - Page Loader
+ * 99998  - Toast Popups
+ * 1100   - Dropdown Menus (navbar & general)
+ * 1035   - Modal Dialogs
+ * 1030   - Modal Backdrop
+ * 1000   - Navbar (sticky-top override)
+ * 0      - Default content
+ */
 
 @media (max-width: 768px) {
     .hero-title {
         font-size: 2rem;
+    }
+}
+
+/* Custom Layout Adjustments */
+.tracking-wider {
+    letter-spacing: 0.06em;
+}
+
+/* Beautiful custom scrollbars for long notification zones */
+.announcement-scroll-areape::-webkit-scrollbar {
+    width: 6px;
+}
+.announcement-scroll-areape::-webkit-scrollbar-track {
+    background: transparent;
+}
+.announcement-scroll-areape::-webkit-scrollbar-thumb {
+    background-color: rgba(111, 66, 193, 0.2);
+    border-radius: 20px;
+}
+.announcement-scroll-areape::-webkit-scrollbar-thumb:hover {
+    background-color: var(--primary-light);
+}
+
+/* Form input refinement */
+.form-select, .form-control {
+    border: 1px solid #e1dbf3;
+    border-radius: 8px;
+    padding: 0.55rem 0.75rem;
+    color: var(--text-dark);
+}
+.form-select:focus, .form-control:focus {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.15);
+}
+
+/* Smooth adjustments for small screens */
+@media (max-width: 576px) {
+    .announcement-item form {
+        width: 100%;
+        text-align: right;
+        margin-top: 8px;
     }
 }

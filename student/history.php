@@ -39,7 +39,7 @@ $d = 'div';
 <th>Scheduled For</th><th>Time Out</th><th>Duration</th><th>Booked On</th><th>Status</th><th>Action</th>
 </tr></thead>
 <tbody>
-<?php foreach ($records as $r):
+<?php $feedbackModals = ''; foreach ($records as $r):
     $dur = $r['duration_minutes'] ?? computeDuration($r['time_in'], $r['time_out']);
     $fb = getDB()->prepare('SELECT id FROM feedback WHERE sit_in_record_id = ?');
     $fb->execute([$r['id']]);
@@ -66,23 +66,9 @@ $d = 'div';
 <?php elseif ($hasFeedback): ?><span class="text-muted small">Rated</span><?php else: ?>—<?php endif; ?>
 </td>
 </tr>
-<?php if ($r['status'] === 'Completed' && !$hasFeedback): ?>
-<div class="modal fade" id="fbModal<?= $r['id'] ?>" tabindex="-1">
-<div class="modal-dialog"><div class="modal-content">
-<div class="modal-header"><h5 class="modal-title">Session Feedback</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-<form method="post" action="<?= BASE_URL ?>/api/feedback.php">
-<div class="modal-body">
-<input type="hidden" name="record_id" value="<?= $r['id'] ?>">
-<label class="form-label-custom">Rating (1-5 stars)</label>
-<select name="rating" class="form-select mb-3" required><?php for ($i=1;$i<=5;$i++): ?><option value="<?= $i ?>"><?= $i ?> Star<?= $i>1?'s':'' ?></option><?php endfor; ?></select>
-<label class="form-label-custom">Your experience</label>
-<textarea name="comments" class="form-control" rows="3" required></textarea>
-</<?= $d ?>>
-<button type="submit" class="btn btn-primary-purple mt-3">Submit Feedback</button>
-</form>
-</<?= $d ?>></<?= $d ?>></<?= $d ?>>
-<?php endif; endforeach; ?>
+<?php if ($r['status'] === 'Completed' && !$hasFeedback):
+    $feedbackModals .= '<div class="modal fade" id="fbModal' . $r['id'] . '" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Session Feedback</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><form method="post" action="' . BASE_URL . '/api/feedback.php"><div class="modal-body"><input type="hidden" name="record_id" value="' . $r['id'] . '"><label class="form-label-custom">Rating (1-5 stars)</label><select name="rating" class="form-select mb-3" required>'; for ($i=1; $i<=5; $i++) { $feedbackModals .= '<option value="' . $i . '">' . $i . ' Star' . ($i > 1 ? 's' : '') . '</option>'; } $feedbackModals .= '</select><label class="form-label-custom">Your experience</label><textarea name="comments" class="form-control" rows="3" required></textarea></div><div class="modal-footer"><button type="submit" class="btn btn-primary-purple">Submit Feedback</button></div></form></div></div></div>';
+endif; endforeach; ?>
 <?php if (empty($records)): ?><tr><td colspan="10" class="text-center text-muted py-4">No records found.</td></tr><?php endif; ?>
 </tbody></table>
-</<?= $d ?>></<?= $d ?>></<?= $d ?>>
-<?php require __DIR__ . '/../includes/footer.php'; ?>
+</<?= $d ?>></<?= $d ?>></<?= $d ?>><?= $feedbackModals ?><?php require __DIR__ . '/../includes/footer.php'; ?>

@@ -19,7 +19,8 @@ $dc = 'd' . 'iv';
 <h5 class="fw-bold mb-1"><?= htmlspecialchars($fullName) ?></h5>
 <p class="text-muted small mb-3">Id: <?= htmlspecialchars($student['id_number']) ?></p>
 <p class="mb-1 small"><strong>Course:</strong> <?= htmlspecialchars($student['course']) ?></p>
-<p class="mb-3 small"><strong>Year Level:</strong> <?= htmlspecialchars($student['year_level']) ?></p>
+<p class="mb-1 small"><strong>Year Level:</strong> <?= htmlspecialchars($student['year_level']) ?></p>
+<?php if (!empty($student['section'])): ?><p class="mb-3 small"><strong>Section:</strong> <?= htmlspecialchars($student['section']) ?></p><?php else: ?><p class="mb-3 small"><strong>Section:</strong> —</p><?php endif; ?>
 <hr>
 <h6 class="fw-bold text-start">Personal Information</h6>
 <p class="small text-start mb-1"><strong>Email:</strong> <?= htmlspecialchars($student['email']) ?></p>

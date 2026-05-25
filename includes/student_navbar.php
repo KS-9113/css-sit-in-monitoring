@@ -2,6 +2,14 @@
 $student = getStudentById((int) $_SESSION['student_id']);
 $fullName = getStudentFullName($student);
 $pic = getProfilePictureUrl($student['profile_picture'] ?? null);
+$studentNotificationCount = 0;
+try {
+    $stmt = getDB()->prepare('SELECT COUNT(*) FROM notifications WHERE recipient_type = ? AND student_id = ? AND is_deleted = 0');
+    $stmt->execute(['student', $student['id']]);
+    $studentNotificationCount = (int) $stmt->fetchColumn();
+} catch (PDOException $e) {
+    $studentNotificationCount = 0;
+}
 $current = basename($_SERVER['PHP_SELF']);
 ?>
 <nav class="navbar navbar-expand-lg navbar-dark navbar-purple student-navbar sticky-top">
@@ -14,7 +22,7 @@ $current = basename($_SERVER['PHP_SELF']);
             </a>
             <ul class="dropdown-menu dropdown-menu-end shadow">
                 <li><a class="dropdown-item" href="<?= BASE_URL ?>/student/dashboard.php"><i class="bi bi-house me-2"></i>Home</a></li>
-                <li><a class="dropdown-item disabled" href="#"><i class="bi bi-bell me-2"></i>Notification</a></li>
+                <li><a class="dropdown-item" href="<?= BASE_URL ?>/student/notifications.php"><i class="bi bi-bell me-2"></i>Notifications<?php if ($studentNotificationCount > 0): ?> <span class="badge bg-danger ms-2"><?= $studentNotificationCount ?></span><?php endif; ?></a></li>
                 <li><a class="dropdown-item" href="<?= BASE_URL ?>/student/profile.php"><i class="bi bi-person me-2"></i>Edit Profile</a></li>
                 <li><a class="dropdown-item" href="<?= BASE_URL ?>/student/history.php"><i class="bi bi-clock-history me-2"></i>View Sit-In History</a></li>
                 <li><a class="dropdown-item" href="<?= BASE_URL ?>/student/reservation.php"><i class="bi bi-calendar-plus me-2"></i>Reservation</a></li>

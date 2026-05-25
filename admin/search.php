@@ -76,7 +76,18 @@ $d = 'div';
                                 </form>
                             <?php endif; ?>
                         <?php endif; ?>
-                        <?php if ($r['status'] === 'Approved'): ?>
+                        <?php if ($r['status'] === 'Reserved'): ?>
+                            <form method="post" action="<?= BASE_URL ?>/api/admin/reservation_action.php" class="d-inline me-1">
+                                <input type="hidden" name="id" value="<?= $r['id'] ?>">
+                                <input type="hidden" name="action" value="accept">
+                                <button class="btn btn-sm btn-success">Accept</button>
+                            </form>
+                            <form method="post" action="<?= BASE_URL ?>/api/admin/reservation_action.php" class="d-inline">
+                                <input type="hidden" name="id" value="<?= $r['id'] ?>">
+                                <input type="hidden" name="action" value="reject">
+                                <button class="btn btn-sm btn-danger">Reject</button>
+                            </form>
+                        <?php elseif ($r['status'] === 'Approved'): ?>
                             <form method="post" action="<?= BASE_URL ?>/api/admin/checkin.php" class="d-inline">
                                 <input type="hidden" name="id" value="<?= $r['id'] ?>">
                                 <input type="hidden" name="return_to" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">

@@ -19,5 +19,15 @@ $db = getDB();
 $now = date('Y-m-d H:i:s');
 $db->prepare('INSERT INTO sit_in_records (sit_in_no, student_id, purpose, laboratory_id, pc_number, scheduled_date, scheduled_time_in, time_in, status, is_walk_in, approved_by) VALUES (?,?,?,?,?,CURDATE(),CURTIME(),?, ?, 1, ?)')
     ->execute([generateSitInNo(), $studentId, $purpose, $labId, $pc, $now, 'On Going', $_SESSION['admin_id']]);
+$reservationId = (int) $db->lastInsertId();
+createNotification(
+    'student',
+    $studentId,
+    null,
+    $reservationId,
+    'Walk-In Started',
+    'Your walk-in reservation has started and has been approved by the laboratory supervisor.',
+    false
+);
 
 redirect('/admin/sitin.php?toast=' . urlencode('Walk-in session started (auto-approved).'));

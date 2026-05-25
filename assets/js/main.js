@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
+    // Page loader - hide after load
     const loader = document.getElementById('page-loader');
     if (loader) {
         window.addEventListener('load', function () {
@@ -11,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 3000);
     }
 
+    // Password toggle functionality
     document.querySelectorAll('.password-toggle').forEach(function (toggle) {
         toggle.addEventListener('click', function () {
             const input = document.querySelector(this.getAttribute('data-target'));
@@ -32,22 +34,39 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // Initialize and manage Bootstrap dropdowns
+    if (typeof bootstrap !== 'undefined' && bootstrap.Dropdown) {
+        document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(function(toggle) {
+            // Create Dropdown instance for each toggle
+            try {
+                bootstrap.Dropdown.getOrCreateInstance(toggle);
+            } catch (e) {
+                console.error('Dropdown init error:', e);
+            }
+        });
+    }
+
     // Close dropdown when clicking navigation links
-    const navLinks = document.querySelectorAll('.dropdown-item[href]');
-    navLinks.forEach(function(link) {
+    document.querySelectorAll('.dropdown-item[href]').forEach(function(link) {
         link.addEventListener('click', function() {
             const dropdown = this.closest('.dropdown-menu');
+
             if (dropdown) {
-                const toggle = this.closest('.navbar').querySelector('[data-bs-toggle="dropdown"]');
-                if (toggle) {
-                    const dropdownInstance = bootstrap.Dropdown.getInstance(toggle);
-                    if (dropdownInstance) {
-                        dropdownInstance.hide();
+                const toggle = dropdown.previousElementSibling;
+
+                if (toggle && typeof bootstrap !== 'undefined') {
+                    const inst = bootstrap.Dropdown.getInstance(toggle);
+
+                    if (inst) {
+                        inst.hide();
                     }
                 }
             }
         });
     });
+
+    // Toast notification display from URL params
+    showToastFromUrl();
 });
 
 function showToast(message, type) {
@@ -84,4 +103,3 @@ function showToastFromUrl() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', showToastFromUrl);

@@ -25,7 +25,16 @@ $d = 'div';
     <div id="studentSuggestions" class="list-group mb-2" style="display:none; max-height:260px; overflow:auto;"></div>
     <div class="mb-3"><small class="text-muted">Select a student from the suggestions.</small></div>
     <label class="form-label">Purpose</label>
-    <select name="purpose" class="form-select mb-2" required><?php foreach (['C programming','Java programming','Python programming','Web Development','Database Management'] as $p): ?><option><?= $p ?></option><?php endforeach; ?></select>
+    <select name="purpose" class="form-select mb-2" required><?php foreach ([
+        'C# Programming',
+        'TypeScript Programming',
+        'Python Programming',
+        'PHP Programming',
+        'JavaScript Programming',
+        'Java Programming',
+        'C++ Programming',
+        'Others'
+    ] as $p): ?><option><?= $p ?></option><?php endforeach; ?></select>
     <label class="form-label">Laboratory</label>
     <select name="laboratory_id" class="form-select mb-2" required><?php foreach ($labs as $l): ?><option value="<?= $l['id'] ?>" <?= $l['id']==$labId?'selected':'' ?>><?= htmlspecialchars($l['lab_name']) ?></option><?php endforeach; ?></select>
     <label class="form-label">PC Number</label>

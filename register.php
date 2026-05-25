@@ -55,6 +55,11 @@ require __DIR__ . '/includes/head.php';
                                         <option>4th Year</option>
                                     </select>
                                 </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label-custom">Section</label>
+                                    <input type="text" name="section" class="form-control" placeholder="e.g. C" required>
+                                </div>
+                                <div class="col-md-6 mb-3"></div>
                                 <div class="col-12 mb-3">
                                     <label class="form-label-custom">Address</label>
                                     <textarea name="address" class="form-control" rows="2" required></textarea>

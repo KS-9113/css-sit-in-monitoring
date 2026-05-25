@@ -1,4 +1,13 @@
-<?php $d = 'div'; ?>
+<?php $d = 'div';
+$adminNotificationCount = 0;
+try {
+    $stmt = getDB()->prepare('SELECT COUNT(*) FROM notifications WHERE recipient_type = ? AND is_deleted = 0');
+    $stmt->execute(['admin']);
+    $adminNotificationCount = (int) $stmt->fetchColumn();
+} catch (PDOException $e) {
+    $adminNotificationCount = 0;
+}
+?>
 <nav class="navbar navbar-expand-lg navbar-dark navbar-purple sticky-top">
 <<?= $d ?> class="container-fluid px-4">
 <a class="navbar-brand navbar-brand-custom" href="<?= BASE_URL ?>/admin/dashboard.php">CCS ADMIN DASHBOARD</a>
@@ -9,6 +18,7 @@
 </a>
 <ul class="dropdown-menu dropdown-menu-end shadow">
 <li><a class="dropdown-item" href="<?= BASE_URL ?>/admin/dashboard.php"><i class="bi bi-house me-2"></i>Home</a></li>
+<li><a class="dropdown-item" href="<?= BASE_URL ?>/admin/notifications.php"><i class="bi bi-bell me-2"></i>Notifications<?php if ($adminNotificationCount > 0): ?> <span class="badge bg-danger ms-2"><?= $adminNotificationCount ?></span><?php endif; ?></a></li>
 <li><a class="dropdown-item" href="<?= BASE_URL ?>/admin/search.php"><i class="bi bi-search me-2"></i>Search</a></li>
 <li><a class="dropdown-item" href="<?= BASE_URL ?>/admin/students.php"><i class="bi bi-people me-2"></i>Students</a></li>
 <li><a class="dropdown-item" href="<?= BASE_URL ?>/admin/sitin.php"><i class="bi bi-pc-display me-2"></i>Sit-In</a></li>
